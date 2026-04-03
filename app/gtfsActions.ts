@@ -29,7 +29,7 @@ export async function initGtfsData() {
 }
 
 export async function updateGtfsRealtimeData() {
-  await updateGtfsRealtime(config)
+  // await updateGtfsRealtime(config)
 }
 
 let realtimeUpdateTimer: NodeJS.Timeout | null = null
