@@ -22,6 +22,7 @@
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
+    "@react-types/shared": "^3.33.1",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/node": "^20",
     "@types/react": "^19",
