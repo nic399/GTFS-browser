@@ -15,5 +15,5 @@
     }
   ],
   "ignoreDuplicates": true,
-  "sqlitePath": "./app/gtfs.db"
+  "sqlitePath": "libsql://gtfs-data-enigmatic-gemini-fm.aws-us-east-1.turso.io"
 }

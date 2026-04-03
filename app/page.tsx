@@ -6,7 +6,8 @@ import {
 import { ScheduleSearch } from "@/components/custom/ScheduleSearch"
 
 export default async function Home() {
-  startGtfsRealtimePolling()
+  // Translink suspended realtime data polling for now
+  // startGtfsRealtimePolling()
 
   const routes = getAllRoutes()
   const stops = getAllStops()

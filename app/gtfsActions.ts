@@ -1,6 +1,7 @@
 "use server"
 
 import {
+  Config,
   getRoutes,
   getStops,
   getStoptimes,
@@ -13,14 +14,87 @@ import {
 import { readFile } from "fs/promises"
 import path from "node:path"
 import { formatDateToGtfsTime } from "./gtfsFormatters"
+import { Client, createClient } from "@libsql/client"
+import Database$1, { Database } from 'better-sqlite3'
+
 
 const config = JSON.parse(
   await readFile(path.join(process.cwd(), "app", "config.json"), "utf8"),
 )
 
-const db = openDb(config)
+// local db for testing
+// const db = openDb(config)
 
-export async function initGtfsData() {
+const url = "file:local-gtfs.db" // Local file node-gtfs will use
+const syncUrl =
+  "libsql://database-bistre-queen-vercel-icfg-e5cmrhuhyibttfno8xpw3jtb.aws-us-east-1.turso.io"
+const authToken =
+  "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NzUyMzg1OTMsImlkIjoiMDE5ZDU0NGMtMDkwMS03MjE4LTk2YzctMWI5OWY0NzUyM2VkIiwicmlkIjoiNWNmYjM3OGQtNmFlNS00MDIzLTkxNzItMzhiMDc1YWFhNzQ1In0.f4WcHheb11lcJeLEfrtTxVKaiDZLe2WpqEbIx7PI2xHfnsl1fdXU-eOfXMaR_vLQNsuuKifXlxrOtPXJy_C4AA"
+
+// const db = createClient({
+//   url: "libsql://gtfs-data-enigmatic-gemini-fm.aws-us-east-1.turso.io",
+//   authToken: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NzUyMzY3MjAsImlkIjoiMDE5ZDU0NWEtN2UwMS03OTgxLWJkN2MtZjRiYjMzZjhjYWM0IiwicmlkIjoiMmVlZjkyNDAtZjUyMy00N2M1LWE4NjktZTU2Mzc5ODhiOTI2In0.vDr0oOc5u0eMIGZSCNZFbYHo_gUZIYdFDB8w7FbyfOclVsRAEtdn2DNmklEt8GEx4Ogi92apx0k-29L26BNIBw"
+// });
+
+async function setupGtfsSync(): Promise<Client> {
+  // 2. Create the LibSQL client with sync capabilities
+  const client = createClient({
+    url,
+    syncUrl,
+    authToken,
+    syncInterval: 60, // Auto-sync every 60 seconds
+  })
+
+  // 3. Perform an initial manual sync to pull existing data from Turso
+  await client.sync()
+
+  // 4. Configure node-gtfs to use the local replica file
+  // node-gtfs expects a standard SQLite file path
+  openDb({
+    sqlitePath: "./local-gtfs.db",
+    // agencies: [{
+    //   agency_key: "my-transit",
+    //   path: "./path-to-gtfs.zip" // Only needed if importing for the first time
+    // }]
+  })
+
+  console.log("Embedded replica ready and syncing.")
+  return client
+}
+
+const db = await setupGtfsSync()
+  .then((client) => {
+    // initGtfsData()
+  })
+  .catch(console.error)
+
+  console.log('db typeof: ', typeof db)
+// if (typeof db === "Client") {
+//   console.log()
+// }
+
+export async function initGtfsData(db?: Database) {
+  const config: Config = {
+    agencies: [
+      {
+        path: "./public/google_transit",
+        exclude: ["shapes"],
+        realtimeAlerts: {
+          url: "https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey=Z4xVgEKed8zNuzLKyFIZ",
+        },
+        realtimeTripUpdates: {
+          url: "https://gtfsapi.translink.ca/v3/gtfsposition?apikey=Z4xVgEKed8zNuzLKyFIZ",
+        },
+        realtimeVehiclePositions: {
+          url: "https://gtfsapi.translink.ca/v3/gtfsalerts?apikey=Z4xVgEKed8zNuzLKyFIZ",
+        },
+      },
+    ],
+    ignoreDuplicates: true,
+    sqlitePath: "./local-gtfs.db",
+    // db: db,
+  }
+
   try {
     const importReport = await importGtfs(config)
   } catch (error) {
