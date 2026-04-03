@@ -15,8 +15,7 @@ import { readFile } from "fs/promises"
 import path from "node:path"
 import { formatDateToGtfsTime } from "./gtfsFormatters"
 import { Client, createClient } from "@libsql/client"
-import Database$1, { Database } from 'better-sqlite3'
-
+import Database$1, { Database } from "better-sqlite3"
 
 const config = JSON.parse(
   await readFile(path.join(process.cwd(), "app", "config.json"), "utf8"),
@@ -50,6 +49,7 @@ async function setupGtfsSync(): Promise<Client> {
 
   // 4. Configure node-gtfs to use the local replica file
   // node-gtfs expects a standard SQLite file path
+  console.log("openDB")
   openDb({
     sqlitePath: "./local-gtfs.db",
     // agencies: [{
@@ -64,11 +64,13 @@ async function setupGtfsSync(): Promise<Client> {
 
 const db = await setupGtfsSync()
   .then((client) => {
-    // initGtfsData()
+    console.log("init db")
+    initGtfsData()
+    console.log("db inited")
   })
   .catch(console.error)
 
-  console.log('db typeof: ', typeof db)
+console.log("db typeof: ", typeof db)
 // if (typeof db === "Client") {
 //   console.log()
 // }
