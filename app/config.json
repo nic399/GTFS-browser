@@ -1,0 +1,19 @@
+{
+  "agencies": [
+    {
+      "path": "./public/google_transit",
+      "exclude": ["shapes"],
+      "realtimeAlerts": {
+        "url": "https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey=Z4xVgEKed8zNuzLKyFIZ"
+      },
+      "realtimeTripUpdates": {
+        "url": "https://gtfsapi.translink.ca/v3/gtfsposition?apikey=Z4xVgEKed8zNuzLKyFIZ"
+      },
+      "realtimeVehiclePositions": {
+        "url": "https://gtfsapi.translink.ca/v3/gtfsalerts?apikey=Z4xVgEKed8zNuzLKyFIZ"
+      }
+    }
+  ],
+  "ignoreDuplicates": true,
+  "sqlitePath": "./app/gtfs.db"
+}
